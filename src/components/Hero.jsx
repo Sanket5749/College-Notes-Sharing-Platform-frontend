@@ -10,7 +10,7 @@ export const Hero = ({
   onRequireAuth,
 }) => {
   return (
-    <section className="relative pt-12 pb-8 md:pt-16 md:pb-12 text-center max-w-4xl mx-auto px-4 sm:px-6">
+ 
       <div>
         {/* Quick Stats Counter */}
         <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-6 border-t border-slate-800/60">
@@ -44,6 +44,6 @@ export const Hero = ({
           </div>
         </div>
       </div>
-    </section>
+
   );
 };
