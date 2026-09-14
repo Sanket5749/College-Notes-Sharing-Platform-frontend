@@ -4,7 +4,11 @@
  * ==============================================================================
  */
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://college-notes-sharing-platform-backend-6wdi.onrender.com/api'
+).replace(/\/+$/, '');
 
 export const apiClient = {
   getToken() {
@@ -12,7 +16,8 @@ export const apiClient = {
   },
 
   async request(endpoint, options = {}) {
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${cleanEndpoint}`;
     const token = this.getToken();
 
     const headers = {
