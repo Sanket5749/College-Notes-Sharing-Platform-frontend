@@ -2,12 +2,14 @@ import React, { useState, useRef } from 'react';
 import { useToast } from './Toast';
 import { apiClient } from '../services/api';
 import { X, UploadCloud, FileText, CheckCircle2 } from 'lucide-react';
+import { ALLOWED_BRANCHES, SEMESTERS, getBranchInfo } from '../constants/branches';
 
 export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
   const { showToast } = useToast();
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState(ALLOWED_BRANCHES[0].name);
   const [semester, setSemester] = useState('1');
   const [subjectId, setSubjectId] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -16,7 +18,29 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
 
   if (!isOpen) return null;
 
-  const filteredSubjects = subjects.filter((s) => !semester || String(s.semester) === String(semester));
+  const branchObj = getBranchInfo(selectedBranch) || ALLOWED_BRANCHES[0];
+  const targetBranchName = branchObj.name;
+  const parsedSemester = parseInt(semester, 10);
+
+  const filteredSubjects = subjects.filter((s) => {
+    // 1. Check semester
+    if (semester && String(s.semester) !== String(semester)) return false;
+
+    // 2. For Semesters 1 and 2, include Common Engineering + Branch subjects
+    if (parsedSemester <= 2) {
+      return (
+        s.department === 'Common Engineering' ||
+        s.department === targetBranchName ||
+        (s.department && s.department.toLowerCase().includes(branchObj.code.toLowerCase()))
+      );
+    }
+
+    // 3. Semesters 3-8: strictly branch subjects
+    return (
+      s.department === targetBranchName ||
+      (s.department && s.department.toLowerCase().includes(branchObj.code.toLowerCase()))
+    );
+  });
 
   const formatBytes = (bytes) => {
     if (!bytes || bytes === 0) return '0 B';
@@ -57,7 +81,7 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
     }
 
     if (!title.trim() || !semester || !subjectId) {
-      showToast('Please complete all required fields.', 'warning');
+      showToast('Please complete all required fields (Title, Branch, Semester, Subject).', 'warning');
       return;
     }
 
@@ -88,21 +112,40 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 className="modal-title">Share Study Notes</h3>
-          <button className="modal-close-btn" onClick={onClose} type="button">
+    <div
+      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8 relative my-8 animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between pb-5 border-b border-slate-800">
+          <div>
+            <h3 className="text-xl font-bold text-slate-100">Share Study Notes</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Upload notes for any of the 9 engineering branches</p>
+          </div>
+          <button
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all cursor-pointer"
+            onClick={onClose}
+            type="button"
+          >
             <X size={18} />
           </button>
         </div>
 
-        <form className="modal-body" onSubmit={handleSubmit}>
+        <form className="pt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
           {/* Drag and Drop Zone */}
-          <div className="form-group">
-            <label className="form-label">Upload PDF Document *</label>
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-1.5 block">
+              Upload PDF Document *
+            </label>
             <div
-              className={`dropzone ${isDragOver ? 'dragover' : ''}`}
+              className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 ${
+                isDragOver
+                  ? 'border-indigo-500 bg-indigo-500/10'
+                  : 'border-slate-800 bg-slate-950/50 hover:border-indigo-500/60 hover:bg-slate-950/80'
+              }`}
               onClick={() => fileInputRef.current?.click()}
               onDragOver={(e) => {
                 e.preventDefault();
@@ -128,28 +171,28 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
                   }
                 }}
               />
-              <div className="dropzone-icon">
+              <div className="w-12 h-12 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
                 <UploadCloud size={24} />
               </div>
-              <span className="dropzone-text">
+              <span className="text-sm font-semibold text-slate-200">
                 {file ? 'Replace selected PDF' : 'Click to browse or drag & drop PDF'}
               </span>
-              <span className="dropzone-subtext">Max file size: 10 MB (Strictly PDF)</span>
+              <span className="text-xs text-slate-500">Max file size: 10 MB (Strictly PDF)</span>
             </div>
 
             {/* File Preview Box */}
             {file && (
-              <div className="file-preview-box">
-                <div className="file-preview-info">
-                  <FileText size={20} color="#F87171" />
-                  <div>
-                    <div className="file-preview-name">{file.name}</div>
-                    <div className="file-preview-size">{formatBytes(file.size)}</div>
+              <div className="flex items-center justify-between gap-3 p-3 mt-3 rounded-xl bg-slate-950 border border-slate-800">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <FileText size={20} className="text-red-400 shrink-0" />
+                  <div className="overflow-hidden text-left">
+                    <div className="text-xs font-semibold text-slate-200 truncate">{file.name}</div>
+                    <div className="text-[11px] font-mono text-slate-500">{formatBytes(file.size)}</div>
                   </div>
                 </div>
                 <button
                   type="button"
-                  className="btn btn-ghost btn-sm btn-icon-only"
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all cursor-pointer"
                   onClick={() => setFile(null)}
                 >
                   <X size={16} />
@@ -159,11 +202,11 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
           </div>
 
           {/* Note Title */}
-          <div className="form-group">
-            <label className="form-label">Note Title *</label>
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-1.5 block">Note Title *</label>
             <input
               type="text"
-              className="form-input"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all"
               placeholder="e.g. Unit 3 Trees & Graphs Comprehensive Notes"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -171,12 +214,34 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
             />
           </div>
 
+          {/* Branch Selector (9 Engineering Streams) */}
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-1.5 block">
+              Engineering Branch (9 Branches Supported) *
+            </label>
+            <select
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer"
+              value={selectedBranch}
+              onChange={(e) => {
+                setSelectedBranch(e.target.value);
+                setSubjectId('');
+              }}
+              required
+            >
+              {ALLOWED_BRANCHES.map((b) => (
+                <option key={b.id} value={b.name}>
+                  [{b.code}] {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Semester & Subject Selectors */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="form-group">
-              <label className="form-label">Semester *</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-slate-300 mb-1.5 block">Semester (1-8) *</label>
               <select
-                className="form-input"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer"
                 value={semester}
                 onChange={(e) => {
                   setSemester(e.target.value);
@@ -184,7 +249,7 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
                 }}
                 required
               >
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                {SEMESTERS.map((s) => (
                   <option key={s} value={s}>
                     Semester {s}
                   </option>
@@ -192,10 +257,10 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
               </select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Subject *</label>
+            <div>
+              <label className="text-xs font-semibold text-slate-300 mb-1.5 block">Subject *</label>
               <select
-                className="form-input"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer"
                 value={subjectId}
                 onChange={(e) => setSubjectId(e.target.value)}
                 required
@@ -203,7 +268,7 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
                 <option value="">Select subject...</option>
                 {filteredSubjects.map((sub) => (
                   <option key={sub.id} value={sub.id}>
-                    {sub.name}
+                    {sub.name} {sub.department === 'Common Engineering' ? '(FE Common)' : ''}
                   </option>
                 ))}
               </select>
@@ -211,10 +276,12 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
           </div>
 
           {/* Description */}
-          <div className="form-group">
-            <label className="form-label">Description (Optional)</label>
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-1.5 block">
+              Description (Optional)
+            </label>
             <textarea
-              className="form-input form-textarea"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y"
               placeholder="Brief summary of syllabus chapters, professor notes, or important topics..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -225,12 +292,11 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
           {/* Submit */}
           <button
             type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', marginTop: '0.5rem' }}
+            className="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
             disabled={uploading}
           >
             <CheckCircle2 size={18} />
-            {uploading ? 'Uploading to Supabase Storage...' : 'Publish Note'}
+            <span>{uploading ? 'Uploading to Supabase Storage...' : 'Publish Note'}</span>
           </button>
         </form>
       </div>

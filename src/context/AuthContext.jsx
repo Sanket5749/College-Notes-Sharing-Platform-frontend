@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../services/api';
 
 const AuthContext = createContext(null);
@@ -14,6 +14,28 @@ export const AuthProvider = ({ children }) => {
   });
   const [token, setToken] = useState(() => localStorage.getItem('auth_token'));
   const [loading, setLoading] = useState(true);
+
+  const logout = useCallback(() => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    const currentToken = localStorage.getItem('auth_token');
+    if (!currentToken) return;
+
+    try {
+      const response = await apiClient.get('/auth/me');
+      if (response?.data?.user) {
+        setUser(response.data.user);
+        localStorage.setItem('auth_user', JSON.stringify(response.data.user));
+      }
+    } catch (err) {
+      console.warn('Failed to refresh user profile:', err);
+    }
+  }, []);
 
   // Validate session on app launch
   useEffect(() => {
@@ -37,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     verifySession();
-  }, [token]);
+  }, [token, logout]);
 
   const login = async (prn, password) => {
     const res = await apiClient.post('/auth/login', {
@@ -73,13 +95,6 @@ export const AuthProvider = ({ children }) => {
     throw new Error(res?.message || 'Registration failed.');
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -90,6 +105,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        refreshUser,
       }}
     >
       {children}
