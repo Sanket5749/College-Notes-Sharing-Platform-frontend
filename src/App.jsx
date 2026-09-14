@@ -9,9 +9,11 @@ import { SemesterFilter } from './components/SemesterFilter';
 import { NotesGrid } from './components/NotesGrid';
 import { UploadModal } from './components/UploadModal';
 import { AuthModal } from './components/AuthModal';
+import { SplashScreen } from './components/SplashScreen';
 import { getBranchInfo } from './constants/branches';
 
 export const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
   const { isAuthenticated, loading: authLoading, refreshUser } = useAuth();
   const { showToast } = useToast();
 
@@ -134,6 +136,11 @@ export const App = () => {
 
   return (
     <div className="min-h-screen relative bg-[#090D16] text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200 overflow-x-hidden">
+      {/* Splash Screen on Initial Page Load & Refresh (2500ms duration) */}
+      {showSplash && (
+        <SplashScreen duration={2500} onFinish={() => setShowSplash(false)} />
+      )}
+
       {/* Ambient background glows */}
       <div className="fixed -top-40 -left-40 w-96 sm:w-[500px] h-96 sm:h-[500px] bg-indigo-600/15 rounded-full blur-[140px] pointer-events-none -z-10"></div>
       <div className="fixed top-1/3 -right-40 w-96 sm:w-[550px] h-96 sm:h-[550px] bg-purple-600/10 rounded-full blur-[160px] pointer-events-none -z-10"></div>
@@ -212,11 +219,8 @@ export const App = () => {
       <footer className="border-t border-slate-800/80 bg-slate-950/80 backdrop-blur-md py-10 text-center relative z-10 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-2">
           <h4 className="text-base font-semibold text-slate-200">
-            EduNotes • College Academic Resource Platform
+            EduNotes Rcpit
           </h4>
-          <p className="text-sm text-slate-400 max-w-xl mx-auto">
-            Restricted to 9 Engineering Branches (COMP, MECH, CIVIL, ELEC, ENTC, AIDS, AIML, DS, IT) across Semesters 1 to 8. Secured with 9-digit PRN authentication.
-          </p>
         </div>
       </footer>
     </div>

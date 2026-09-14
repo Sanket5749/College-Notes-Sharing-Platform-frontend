@@ -28,11 +28,6 @@ export const Hero = ({
             <span className="text-xs text-slate-400 font-medium mt-0.5">Full Coverage</span>
           </div>
 
-          <div className="flex flex-col items-center">
-            <span className="text-xl sm:text-2xl font-bold text-emerald-400">100%</span>
-            <span className="text-xs text-slate-400 font-medium mt-0.5">Verified PDF Files</span>
-          </div>
-
           <div className="sm:ml-4">
             <button
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all cursor-pointer"

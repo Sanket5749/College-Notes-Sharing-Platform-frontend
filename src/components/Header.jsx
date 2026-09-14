@@ -29,7 +29,7 @@ export const Header = ({ onOpenAuth, onOpenUpload, searchQuery, onSearchChange }
             <BookOpen size={20} />
           </div>
           <span className="tracking-tight text-xl font-extrabold">
-            Edu<span className="text-gradient">Notes</span>
+            Edu<span className="text-gradient">Notes Rcpit</span>
           </span>
         </div>
 

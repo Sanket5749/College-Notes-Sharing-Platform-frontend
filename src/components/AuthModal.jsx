@@ -78,7 +78,7 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login' }) => {
         password: regPassword,
         role: regRole,
       });
-      showToast('Account registered successfully! Welcome to EduNotes.', 'success');
+      showToast('Account registered successfully! Welcome to EduNotes Rcpit.', 'success');
       onClose();
     } catch (err) {
       showToast(err.message || 'Registration failed.', 'error');
@@ -98,7 +98,7 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login' }) => {
       >
         <div className="flex items-center justify-between pb-5 border-b border-slate-800">
           <h3 className="text-xl font-bold text-slate-100">
-            {activeTab === 'login' ? 'Sign In to EduNotes' : 'Create Account'}
+            {activeTab === 'login' ? 'Sign In to EduNotes Rcpit' : 'Create Account'}
           </h3>
           <button
             className="p-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all cursor-pointer"
