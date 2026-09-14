@@ -88,15 +88,6 @@ export const Header = ({ onOpenAuth, onOpenUpload, searchQuery, onSearchChange }
                 </div>
               </div>
 
-              {/* Upload Note Button */}
-              <button
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-md shadow-indigo-500/25 active:scale-[0.98] transition-all cursor-pointer"
-                onClick={onOpenUpload}
-              >
-                <Upload size={15} />
-                <span>Upload Note</span>
-              </button>
-
               {/* Logout Button */}
               <button
                 className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition-all cursor-pointer"
