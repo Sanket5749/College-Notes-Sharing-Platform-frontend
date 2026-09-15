@@ -213,7 +213,6 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
           aria-label="Cancel"
         >
           <X size={16} />
-          <span>Cancel</span>
         </button>
 
         <form
@@ -474,5 +473,3 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
     </div>
   );
 };
-
-Now the layout has Cancel at the top-right and Publish Note at the bottom. The Cancel button also properly clears the form before closing.
