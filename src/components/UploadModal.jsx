@@ -120,19 +120,6 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
         className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8 relative my-8 animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between pb-5 border-b border-slate-800">
-          <div>
-            <h3 className="text-xl font-bold text-slate-100">Share Study Notes</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Upload notes for any of the 9 engineering branches</p>
-          </div>
-          <button
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all cursor-pointer"
-            onClick={onClose}
-            type="button"
-          >
-            <X size={18} />
-          </button>
-        </div>
 
         <form className="pt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
           {/* Drag and Drop Zone */}
