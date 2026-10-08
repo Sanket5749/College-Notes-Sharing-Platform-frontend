@@ -55,17 +55,22 @@ export const NoteCard = ({ note, onDeleted, onRequireAuth }) => {
     setDownloading(true);
     try {
       const res = await apiClient.get(`/notes/${note.id}/download`);
-      const downloadUrl = res?.data?.download_url;
+      const downloadUrl = res?.data?.download_url || res?.data?.downloadUrl;
+      const fileName = res?.data?.fileName || note.file_name || 'notes.pdf';
 
       if (downloadUrl) {
-        // Trigger browser download via clean anchor
+        // Trigger browser download via a temporary anchor element.
+        // The Cloudinary URL includes fl_attachment which forces the browser
+        // to show a "Save As" dialog even for cross-origin requests.
         const link = document.createElement('a');
         link.href = downloadUrl;
+        link.setAttribute('download', fileName);
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         document.body.appendChild(link);
         link.click();
-        link.remove();
+        // Small delay before removing to ensure the click registers
+        setTimeout(() => link.remove(), 200);
 
         setDownloadCount((prev) => prev + 1);
         showToast('PDF download has started!', 'success');

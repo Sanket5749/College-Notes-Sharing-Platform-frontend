@@ -463,7 +463,7 @@ export const UploadModal = ({ isOpen, onClose, subjects, onUploaded }) => {
 
             <span>
               {uploading
-                ? 'Uploading to Supabase Storage...'
+                ? 'Uploading to Cloudinary...'
                 : 'Publish Note'}
             </span>
           </button>

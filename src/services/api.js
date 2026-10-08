@@ -4,11 +4,29 @@
  * ==============================================================================
  */
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'https://college-notes-sharing-platform-backend-6wdi.onrender.com/api'
-).replace(/\/+$/, '');
+// Resolve and normalize the API Base URL
+const resolveApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+
+  if (envUrl && typeof envUrl === 'string') {
+    let clean = envUrl.trim().replace(/\/+$/, '');
+    // Ensure /api suffix is present so routes (/notes, /auth, etc.) map correctly
+    if (!clean.endsWith('/api') && !clean.includes('/api/')) {
+      clean = `${clean}/api`;
+    }
+    return clean;
+  }
+
+  // Fallback in development mode
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5000/api';
+  }
+
+  // Fallback in production mode (Render Backend)
+  return 'https://college-notes-sharing-platform-backend-6wdi.onrender.com/api';
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export const apiClient = {
   getToken() {
@@ -16,7 +34,13 @@ export const apiClient = {
   },
 
   async request(endpoint, options = {}) {
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    let cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+    // Prevent duplicate /api/api/ if endpoint was called with /api prefix
+    if (cleanEndpoint.startsWith('/api/') && API_BASE_URL.endsWith('/api')) {
+      cleanEndpoint = cleanEndpoint.substring(4);
+    }
+
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${cleanEndpoint}`;
     const token = this.getToken();
 
